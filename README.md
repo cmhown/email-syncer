@@ -1,5 +1,5 @@
 # Mailbox Client
-Mailbox Client enables user to register and link mailboxes from gmail and outlook. On linking the mailbox, it downloads all the email from provider using IMAP protocol. It keeps the data uptodate and reflects realtime updates using IMAP IDLE protocol. It also utilizes the EventSource API to sync updates on the frontend client. 
+**Mailbox Client** allows users to register and link their Gmail and Outlook mailboxes seamlessly. Upon linking a mailbox, it downloads all emails from the provider using the IMAP protocol. The client ensures that data remains up to date by reflecting real-time updates through the IMAP IDLE protocol. Additionally, it leverages the EventSource API to synchronize updates on the frontend, providing a smooth user experience.
 ## Installation
 ### Clone the Repository
 ```bash
@@ -11,7 +11,7 @@ cd mailbox-client
 ```
 ### Start Docker Containers
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Configuration
