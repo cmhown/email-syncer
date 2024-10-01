@@ -53,12 +53,12 @@ Once an account is linked, the Laravel backend saves the linked account informat
 
 These events trigger synchronization jobs, which update both the backend and frontend.
 ### Features
-**Unique Queue Jobs:** Jobs are made unique to avoid unnecessary processing.
-**Elasticsearch Indexes:** Managed using the `babenkoivan/elastic-migrations` package, which handles Elasticsearch indexes similarly to MySQL migrations.
-**OAuth:** Implemented using the `laravel/socialite` package. Microsoft Outlook support is added via the `socialiteproviders/microsoft` package.
-**IMAP Communication:** Managed by the `webklex/laravel-imap` package. A custom wrapper, `CustomImapIdleService`, is used to extend its IDLE functionality for events like flag changes and deletions.
+- **Unique Queue Jobs:** Jobs are made unique to avoid unnecessary processing.
+- **Elasticsearch Indexes:** Managed using the `babenkoivan/elastic-migrations` package, which handles Elasticsearch indexes similarly to MySQL migrations.
+- **OAuth:** Implemented using the `laravel/socialite` package. Microsoft Outlook support is added via the `socialiteproviders/microsoft` package.
+- **IMAP Communication:** Managed by the `webklex/laravel-imap` package. A custom wrapper, `CustomImapIdleService`, is used to extend its IDLE functionality for events like flag changes and deletions.
 ### Scalability & Monitoring
-**Redis:** Used for queuing jobs to ensure scalability and also to send realtime updates to frontend.
-**Supervisord:** Handles processing of queued jobs efficiently and allows horizontal scaling.
-**Command for OAuth Account Synchronization:** A custom command schedules periodic OAuth account syncs to keep email folders up to date. Adjust the frequency of this command as needed.
-**Laravel Horizon:** To monitor jobs
+- **Redis:** Used for queuing jobs to ensure scalability and also to send realtime updates to frontend.
+- **Supervisord:** Handles processing of queued jobs efficiently and allows horizontal scaling.
+- **Command for OAuth Account Synchronization:** A custom command schedules periodic OAuth account syncs to keep email folders up to date. Adjust the frequency of this command as needed.
+- **Laravel Horizon:** To monitor jobs
