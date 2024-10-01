@@ -60,7 +60,7 @@ services:
       - DB_DATABASE=laravel
       - DB_USERNAME=root
       - DB_PASSWORD=root
-      - ELASTIC_HOST=elasticsearch
+      - ELASTIC_HOST=elasticsearch:9200
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     depends_on:

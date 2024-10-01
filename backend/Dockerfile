@@ -28,6 +28,10 @@ COPY --from=composer:2.3 /usr/bin/composer /usr/bin/composer
 # Set the working directory
 WORKDIR /var/www/html
 
+# Copy .env file
+RUN touch .env
+COPY .env.example .env
+
 # Copy the application code
 COPY . .
 
@@ -41,8 +45,6 @@ RUN chown -R www-data:www-data /var/www/html/bootstrap/cache \
 
 # Copy the supervisor config from the host
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-COPY .env.example /var/www/html/backend/.env
 
 # Install Laravel dependencies
 WORKDIR /var/www/html

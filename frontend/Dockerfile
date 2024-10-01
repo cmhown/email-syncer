@@ -5,7 +5,11 @@ WORKDIR /app
 
 # Copy the app code
 COPY . .
-COPY .env.example /var/www/html/frontend/.env
+
+# Copy .env file
+WORKDIR /app
+RUN touch .env
+COPY .env.example .env
 
 # Install dependencies
 RUN npm install
