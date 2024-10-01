@@ -31,7 +31,7 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
         $this->oauthAccount = $oauthAccount;
     }
 
-         /**
+    /**
      * Get the unique ID for the job.
      */
     public function uniqueId(): string
@@ -54,23 +54,12 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
 
             $folders = $mailServiceClient->getFolders();
 
+            // Deleting existing folders for the account
             $this->esEmailFolderModel->deleteAcountFolders($this->oauthAccount->id);
 
-            foreach ($folders as $folder) {
+            // Recursively handle folders and subfolders
+            $this->syncFoldersRecursively($folders);
 
-                Log::info("Syncing account: " . $this->oauthAccount->id . " and folder: " . $folder->name);
-
-                $folderData = ImapDataParser::parseFolderData($folder);
-
-                $this->esEmailFolderModel->add($this->oauthAccount, $folderData);
-
-                SyncFolderMessages::dispatch($this->oauthAccount, $folder->name);
-
-                // Setting Idle job in separate queue to scale separately
-                IdleEmailFolder::dispatch($this->oauthAccount, $folder->name)->onQueue('imap_idle');
-
-                Log::info("Synced folders for account: " . $this->oauthAccount->id . " and folder: " . $folder->name);
-            }
         } catch (Exception $e) {
             Log::error("Exception in account: " . $this->oauthAccount->id);
             Log::error($e->getMessage());
@@ -81,5 +70,33 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
         EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provier, 'sync_folders');
 
         Log::info("Synced folders for account: " . $this->oauthAccount->id);
+    }
+
+    /**
+     * Recursively sync folders and their children.
+     */
+    private function syncFoldersRecursively($folders, $parentFolderName = null)
+    {
+        foreach ($folders as $folder) {
+            $folderName = $parentFolderName ? $parentFolderName . '/' . $folder->name : $folder->name;
+
+            Log::info("Syncing account: " . $this->oauthAccount->id . " and folder: " . $folderName);
+
+            $folderData = ImapDataParser::parseFolderData($folder);
+
+            $this->esEmailFolderModel->add($this->oauthAccount, $folderData);
+
+            SyncFolderMessages::dispatch($this->oauthAccount, $folderName);
+
+            // Setting Idle job in separate queue to scale separately
+            IdleEmailFolder::dispatch($this->oauthAccount, $folderName)->onQueue('imap_idle');
+
+            Log::info("Synced folders for account: " . $this->oauthAccount->id . " and folder: " . $folderName);
+
+            // Recursively process child folders, if any
+            if ($folder->hasChildren()) {
+                $this->syncFoldersRecursively($folder->getChildren(), $folderName);
+            }
+        }
     }
 }

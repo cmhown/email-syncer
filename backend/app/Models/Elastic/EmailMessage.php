@@ -3,7 +3,6 @@
 namespace App\Models\Elastic;
 
 use App\Models\OauthAccount;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -11,30 +10,6 @@ class EmailMessage extends ElasticModel
 {
 
     public $index = 'email_messages';
-
-    // public function getByAccount($oauthId, $from = 0, $size = 10)
-    // {
-    //     $params = [
-    //         'index' => $this->index,
-    //         'body' => [
-    //             'from' => $from,
-    //             'size' => $size,
-    //             'query' => [
-    //                 'term' => ['oauth_id' => $oauthId]
-    //             ]
-    //         ]
-    //     ];
-
-    //     $results = $this->esClient->search($params);
-
-    //     // Get the hits data
-    //     $emails = esGetHits($results);
-
-    //     return [
-    //         'emails' => $emails,
-    //         'total' => $results['hits']['total']['value'],
-    //     ];
-    // }
 
     public function getByFolder($oauthId, $folderId, $from = 0, $size = 10)
     {
@@ -91,5 +66,100 @@ class EmailMessage extends ElasticModel
     public function deleteFolderMessages(string $folderId)
     {
         $this->deleteByParams(['folder_id' => $folderId]);
+    }
+
+
+     /**
+     * Get message IDs for a specific folder using Elasticsearch scroll.
+     *
+     * @param string $folderId
+     * @return array
+     */
+    public function getFolderMessageIds(string $folderId): array
+    {
+        $messageIds = [];
+        $params = [
+            'index' => $this->index,
+            'scroll' => '2m', // Keep the scroll context alive for 2 minutes
+            'size' => 100, // Number of documents to retrieve per batch
+            'body' => [
+                '_source' => ['message_id'], // Only retrieve the message_id field
+                'query' => [
+                    'term' => [
+                        'folder_id' => $folderId
+                    ]
+                ]
+            ]
+        ];
+
+        // Initial search request
+        try {
+            $response = $this->esClient->search($params);
+            // Keep adding results until there are no more
+            while (true) {
+                // Add the current batch of message IDs to the array
+                foreach ($response['hits']['hits'] as $hit) {
+                    $messageIds[] = $hit['_source']['message_id']; // Get only message_id
+                }
+
+                // Check if there are more results
+                if (count($response['hits']['hits']) === 0) {
+                    break; // Exit if no more messages
+                }
+
+                // Prepare the next scroll request
+                $scrollId = $response['_scroll_id'];
+                $response = $this->esClient->scroll([
+                    'scroll_id' => $scrollId,
+                    'scroll' => '2m' // Keep the scroll context alive
+                ]);
+            }
+        } catch (Exception $e) {
+            Log::error("Error fetching messages for folder {$folderId}: " . $e->getMessage());
+        }
+
+        return $messageIds; // Return only message IDs
+    }
+
+    /**
+     * Delete specific messages from a folder.
+     *
+     * @param array $messageIds
+     * @param string $folderId
+     */
+    public function deleteMessages(array $messageIds, string $folderId): void
+    {
+        if (empty($messageIds)) {
+            return;
+        }
+
+        $params = [
+            'index' => $this->index,
+            'body' => [
+                'query' => [
+                    'bool' => [
+                        'must' => [
+                            [
+                                'terms' => [
+                                    'message_id' => $messageIds // Assuming message_id is the field in your Elasticsearch index
+                                ]
+                            ],
+                            [
+                                'term' => [
+                                    'folder_id' => $folderId
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        try {
+            $this->esClient->deleteByQuery($params);
+            Log::info("Deleted messages for folder {$folderId} with IDs: " . implode(', ', $messageIds));
+        } catch (Exception $e) {
+            Log::error("Error deleting messages from folder {$folderId}: " . $e->getMessage());
+        }
     }
 }

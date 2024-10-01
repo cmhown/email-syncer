@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev libpq-dev libc-client-dev libkrb5-dev supervisor \
     && docker-php-ext-install zip pdo pdo_mysql
 
-RUN docker-php-ext-install zip pdo pdo_mysql mbstring exif pcntl bcmath 
+RUN docker-php-ext-install zip pdo pdo_mysql pcntl 
 
 # Install the imap extension
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
@@ -41,6 +41,8 @@ RUN chown -R www-data:www-data /var/www/html/bootstrap/cache \
 
 # Copy the supervisor config from the host
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+COPY .env.example /var/www/html/backend/.env
 
 # Install Laravel dependencies
 WORKDIR /var/www/html

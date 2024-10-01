@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Copy the app code
 COPY . .
+COPY .env.example /var/www/html/frontend/.env
 
 # Install dependencies
 RUN npm install

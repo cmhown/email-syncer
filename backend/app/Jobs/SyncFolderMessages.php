@@ -25,13 +25,13 @@ class SyncFolderMessages implements ShouldQueue, ShouldBeUnique
     /**
      * Create a new job instance.
      */
-    public function __construct(OauthAccount $oauthAccount, String $folderName)
+    public function __construct(OauthAccount $oauthAccount, string $folderName)
     {
         $this->oauthAccount = $oauthAccount;
         $this->folderName = $folderName;
     }
 
-     /**
+    /**
      * Get the unique ID for the job.
      */
     public function uniqueId(): string
@@ -54,14 +54,26 @@ class SyncFolderMessages implements ShouldQueue, ShouldBeUnique
 
             $folder = $mailServiceClient->getFolder($this->folderName);
 
-            $this->esEmailMessageModel->deleteFolderMessages(formatFolderId($this->oauthAccount->id, $this->folderName));
+            // Fetch existing messages from Elasticsearch
+            $existingMessageIds = $this->esEmailMessageModel->getFolderMessageIds(formatFolderId($this->oauthAccount->id, $this->folderName));
 
-            $folder->messages()->all()->chunked(function ($messages, $chunk) {
-                $messages->each(function ($message) {
+            // Create an array to track IDs of new messages to add
+            $newMessageIds = [];
+
+            // Sync messages in chunks
+            $folder->messages()->all()->chunked(function ($messages, $chunk) use (&$newMessageIds) {
+                $messages->each(function ($message) use (&$newMessageIds) {
                     $messageData = ImapDataParser::parseMessageData($message);
+                    $newMessageIds[] = $messageData['message_id']; // Collect new message IDs
                     $this->esEmailMessageModel->add($this->oauthAccount, $messageData, $this->folderName);
                 });
             }, $chunk_size = 100, $start_chunk = 1);
+
+            $messagesToDelete = array_diff($existingMessageIds, $newMessageIds);
+
+            if (!empty($messagesToDelete)) {
+                $this->esEmailMessageModel->deleteMessages($messagesToDelete, formatFolderId($this->oauthAccount->id, $this->folderName));
+            }
         } catch (Exception $e) {
             Log::error("Exception in account: " . $this->oauthAccount->id . " and Folder: " . $this->folderName);
             Log::error($e->getMessage());
@@ -71,6 +83,6 @@ class SyncFolderMessages implements ShouldQueue, ShouldBeUnique
 
         EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provier, $this->folderName);
 
-        Log::info("Synced message for account: " . $this->oauthAccount->id . "and Folder: " . $this->folderName);
+        Log::info("Synced message for account: " . $this->oauthAccount->id . " and Folder: " . $this->folderName);
     }
 }

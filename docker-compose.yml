@@ -18,8 +18,7 @@ services:
     ports:
       - "9200:9200"
     networks:
-      email:
-        ipv4_address: 172.18.0.2
+      - mbc
 
   # MySQL database for Laravel
   mysql:
@@ -33,38 +32,43 @@ services:
     ports:
       - "3307:3306"
     networks:
-      email:
-        ipv4_address: 172.18.0.3
-      
+      - mbc
+
+  # Redis service
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mbc
+
   # Laravel service (PHP app)
   laravel:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        - UID=${UID:-1000}
     container_name: laravel
     volumes:
       - ./backend:/var/www/html
     ports:
       - "8000:80"
-    # environment:
-      # - DB_CONNECTION=mysql
-      # - DB_HOST=mysql
-      # - DB_PORT=3306
-      # - DB_DATABASE=laravel
-      # - DB_USERNAME=root
-      # - DB_PASSWORD=root
-      # - ELASTIC_HOST=elasticsearch
-      # - REDIS_HOST=redis
-      # - REDIS_PORT=6379
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravel
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - ELASTIC_HOST=elasticsearch
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       - mysql
       - elasticsearch
       - redis
     networks:
-      email:
-        ipv4_address: 172.18.0.4
+      - mbc
 
   # React service (Frontend app)
   react:
@@ -77,25 +81,11 @@ services:
     ports:
       - "3000:3000"
     networks:
-      email:
-        ipv4_address: 172.18.0.5
-
-  # Redis service
-  redis:
-    image: redis:6.2-alpine
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      email:
-        ipv4_address: 172.18.0.6
+      - mbc
 
 networks:
-  email:
-    ipam:
-      config:
-        - subnet: 172.18.0.0/16
-          gateway: 172.18.0.1
+  mbc:
+    driver: bridge
 
 volumes:
   es_data:
