@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # Elasticsearch service
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      email:
+        ipv4_address: 172.18.0.2
+
+  # MySQL database for Laravel
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      email:
+        ipv4_address: 172.18.0.3
+      
+  # Laravel service (PHP app)
+  laravel:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - UID=${UID:-1000}
+    container_name: laravel
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "8000:80"
+    # environment:
+      # - DB_CONNECTION=mysql
+      # - DB_HOST=mysql
+      # - DB_PORT=3306
+      # - DB_DATABASE=laravel
+      # - DB_USERNAME=root
+      # - DB_PASSWORD=root
+      # - ELASTIC_HOST=elasticsearch
+      # - REDIS_HOST=redis
+      # - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - elasticsearch
+      - redis
+    networks:
+      email:
+        ipv4_address: 172.18.0.4
+
+  # React service (Frontend app)
+  react:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    networks:
+      email:
+        ipv4_address: 172.18.0.5
+
+  # Redis service
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      email:
+        ipv4_address: 172.18.0.6
+
+networks:
+  email:
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+          gateway: 172.18.0.1
+
+volumes:
+  es_data:
+    driver: local
+  mysql_data:
+    driver: local
