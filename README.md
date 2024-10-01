@@ -1,13 +1,13 @@
-# Mailboxes Sync App
-
+# Mailbox Client
+Mailbox Client enables user to register and link mailboxes from gmail and outlook. On linking the mailbox, it downloads all the email from provider using IMAP protocol. It keeps the data uptodate and reflects realtime updates using IMAP IDLE protocol. It also utilizes the EventSource API to sync updates on the frontend client. 
 ## Installation
 ### Clone the Repository
 ```bash
-git clone https://github.com/cmhown/email-syncer.git
+git clone https://github.com/cmhown/mailbox-client.git
 ```
 ### Navigate to the Root Directory
 ```
-cd email-syncer
+cd mailbox-client
 ```
 ### Start Docker Containers
 ```
@@ -15,7 +15,7 @@ docker-compose up -d
 ```
 
 ### Configuration
-Add the following environment variables to your .env file:
+Add the following credentials to your .env file. 
 ```
 GOOGLE_CLIENT_ID=<your-google-client-id>
 GOOGLE_CLIENT_SECRET=<your-google-client-secret>
