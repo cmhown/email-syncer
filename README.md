@@ -78,7 +78,7 @@ cd frontend
 ```
 npm install
 ```
-If still not work, run this commond twice
+If still not works, run this commond twice
 ```
 npm audit fix --force
 ```
