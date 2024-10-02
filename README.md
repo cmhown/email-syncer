@@ -54,10 +54,10 @@ composer dump-autoload
 ```
 For permission issues, run
 ```
-chown -R www-data:www-data /var/www/html
+chgrp www-data /var/www/html -R
 ```
 ```
-chmod 777 /var/www/html/storage -R
+chmod 755 /var/www/html/storage -R
 ```
 For database migrations
 ```

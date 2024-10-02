@@ -40,8 +40,8 @@ WORKDIR /etc/apache2/sites-available
 COPY 000-default.conf /etc/apache2/sites-available/
 
 # Set permissions for storage and bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/bootstrap/cache \
-    && chmod 777 /var/www/html/storage -R
+RUN chown -R www-data:www-data /var/www/html/bootstrap/cache /var/www/html/storage \
+    && chmod 755 /var/www/html/storage -R
 
 # Copy the supervisor config from the host
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
