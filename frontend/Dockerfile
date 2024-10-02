@@ -8,8 +8,6 @@ COPY . .
 
 # Copy .env file
 WORKDIR /app
-RUN touch .env
-COPY .env.example .env
 
 # Install dependencies
 RUN npm install

@@ -58,7 +58,7 @@ const Mailbox = (props) => {
         fetchFolders();
 
         // Start SSE stream
-        const eventSource = new EventSource(`http://172.18.0.4/api/${oauth_id}/${provider}/sse`);
+        const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/${oauth_id}/${provider}/sse`);
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             const folder_ids = data || [];

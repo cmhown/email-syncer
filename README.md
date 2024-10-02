@@ -25,9 +25,9 @@ MICROSOFT_CLIENT_SECRET=<your-microsoft-client-secret>
 ```
 ### Application URLs
 1. Your Laravel app should be accessible at:
-http://localhost and http://172.30.0.4:8000
+http://localhost:8000
 2. Your React app should run at:
-http://localhost:3000 and http://172.30.0.5:3000
+http://localhost:3000
 ### Usage
 1. Open the React app URL and register a new user.
 2. Log in to your account. You will be redirected to the dashboard page.
@@ -62,3 +62,25 @@ These events trigger synchronization jobs, which update both the backend and fro
 - **Supervisord:** Handles processing of queued jobs efficiently and allows horizontal scaling.
 - **Command for OAuth Account Synchronization:** A custom command schedules periodic OAuth account syncs to keep email folders up to date. Adjust the frequency of this command as needed.
 - **Laravel Horizon:** To monitor jobs
+## Docker Setup Issues
+Here are some common setup issues that you might face.
+
+### Laravel
+** No vendor directory **
+Sometimes docker fails to create a vendor directory and gives error when trying to access Laravel app.
+
+Go inside the container and run the following commands manually
+```
+docker exec -it laravel bash
+composer install
+php artisan key:generate
+php artisan config:clear
+chown -R www-data:www-data /var/www/html
+chmod 755 /var/www/html/storage -R
+php artisan migrate
+php artisan elastic:migrate
+```
+If you change the port of react app from 3000, please also change it in `backend/config/cors.php` line `22`
+
+### React
+If react container fails to restart, run npm install from host machine in `frontend` directory.
