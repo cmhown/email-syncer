@@ -13,7 +13,7 @@ cd mailbox-client
 ### Start Docker Containers
 Create a .env file
 ```
-cp .env.example .env
+cp backend/.env.example backend/.env
 ```
 Start docker conatiners
 ```
