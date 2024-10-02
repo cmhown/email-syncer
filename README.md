@@ -9,7 +9,13 @@ git clone https://github.com/cmhown/mailbox-client.git
 ```
 cd mailbox-client
 ```
+
 ### Start Docker Containers
+Create a .env file
+```
+cp .env.example .env
+```
+Start docker conatiners
 ```
 docker compose up -d
 ```
@@ -28,11 +34,12 @@ MICROSOFT_CLIENT_SECRET=<your-microsoft-client-secret>
 http://localhost:8000
 2. Your React app should run at:
 http://localhost:3000
+
 ### Usage
 1. Open the React app URL and register a new user.
-2. Log in to your account. You will be redirected to the dashboard page.
+2. Log in to your account. You will be redirected to the dashboard page http://localhost:3000.
 3. Link an email provider from the available options (Google or Microsoft).
-4. Your email list will start loading as soon as emails are fetched from the backend.
+4. Your email list will start loading on UI as soon as emails are fetched in the backend.
 5. The frontend uses the EventSource API to get real-time updates from the server.
 
 ### Email Synchronization Process
@@ -66,21 +73,31 @@ These events trigger synchronization jobs, which update both the backend and fro
 Here are some common setup issues that you might face.
 
 ### Laravel
-** No vendor directory **
 Sometimes docker fails to create a vendor directory and gives error when trying to access Laravel app.
 
 Go inside the container and run the following commands manually
 ```
 docker exec -it laravel bash
+```
+```
 composer install
-php artisan key:generate
-php artisan config:clear
+```
+For permission issues, run
+```
 chown -R www-data:www-data /var/www/html
+```
+```
 chmod 755 /var/www/html/storage -R
+```
+For database migrations
+```
 php artisan migrate
+```
+For elasticsearch migrations
+```
 php artisan elastic:migrate
 ```
 If you change the port of react app from 3000, please also change it in `backend/config/cors.php` line `22`
 
 ### React
-If react container fails to restart, run npm install from host machine in `frontend` directory.
+If react container fails to restart, run `npm install` from host machine in `frontend` directory.

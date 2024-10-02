@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Services\EmailUpdateService;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SSEController extends Controller
@@ -28,7 +26,7 @@ class SSEController extends Controller
                 }
 
                 // Sleep for a certain period before the next iteration
-                sleep(10);
+                sleep(5);
             }
         });
 

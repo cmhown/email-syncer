@@ -23,6 +23,10 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
     public $oauthAccount;
     public $esEmailFolderModel;
 
+    private $skipFolders = [
+        '[Gmail]'
+    ];
+
     /**
      * Create a new job instance.
      */
@@ -86,11 +90,13 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
 
             $this->esEmailFolderModel->add($this->oauthAccount, $folderData);
 
-            SyncFolderMessages::dispatch($this->oauthAccount, $folderName);
+            if (!in_array($folderName, $this->skipFolders)) {
+                
+                SyncFolderMessages::dispatch($this->oauthAccount, $folderName);
 
-            // Setting Idle job in separate queue to scale separately
-            IdleEmailFolder::dispatch($this->oauthAccount, $folderName)->onQueue('imap_idle');
-
+                // Setting Idle job in separate queue to scale separately
+                IdleEmailFolder::dispatch($this->oauthAccount, $folderName)->onQueue('imap_idle');
+            }
             Log::info("Synced folders for account: " . $this->oauthAccount->id . " and folder: " . $folderName);
 
             // Recursively process child folders, if any

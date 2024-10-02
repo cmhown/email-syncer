@@ -1,53 +1,12 @@
-version: '3.8'
-
 services:
-  # Elasticsearch service
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-    networks:
-      - mbc
-
-  # MySQL database for Laravel
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3307:3306"
-    networks:
-      - mbc
-
-  # Redis service
-  redis:
-    image: redis:6.2-alpine
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - mbc
 
   # Laravel service (PHP app)
   laravel:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        - UID=${UID:-1000}
     container_name: laravel
     volumes:
       - ./backend:/var/www/html
@@ -68,7 +27,8 @@ services:
       - elasticsearch
       - redis
     networks:
-      - mbc
+      mbc:
+        ipv4_address: 172.20.0.2
 
   # React service (Frontend app)
   react:
@@ -81,11 +41,59 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - mbc
+      mbc:
+        ipv4_address: 172.20.0.3
+
+  # Elasticsearch service
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      mbc:
+        ipv4_address: 172.20.0.4
+
+  # MySQL database for Laravel
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      mbc:
+        ipv4_address: 172.20.0.5
+
+  # Redis service
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      mbc:
+        ipv4_address: 172.20.0.6
 
 networks:
   mbc:
-    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
   es_data:
