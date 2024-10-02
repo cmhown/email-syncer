@@ -84,7 +84,7 @@ npm audit fix --force
 ```
 
 ### Usage
-1. Open the React app URL and register a new user.
+1. Open the React app URL http://localhost:3000/register and register a new user.
 2. Log in to your account. You will be redirected to the home page. If it doesn't redirects, try access this url manually http://localhost:3000.
 3. Link an email provider from the available options (Google or Microsoft).
 4. Your email list will start loading on UI as soon as emails are fetched in the backend.
