@@ -98,8 +98,10 @@ Once an account is linked, the Laravel backend saves the linked account informat
 2. Sends updates to the frontend via Redis.
 3. Stores folder data in a local Elasticsearch index.
 4. Creates two additional jobs:
-4.1 `SyncEmailMessages`: Syncs all emails from the folder to Elasticsearch and sends updates to Redis for the frontend.
-4.2 `IdleEmailFolder`: Creates an IMAP IDLE connection for the folder and listens for real-time changes from the provider, such as new messages, flag changes, and deletions.
+
+   4.1 `SyncEmailMessages`: Syncs all emails from the folder to Elasticsearch and sends updates to Redis for the frontend.
+
+   4.2 `IdleEmailFolder`: Creates an IMAP IDLE connection for the folder and listens for real-time changes from the provider, such as new messages, flag changes, and deletions.
 
 **Event listeners handle:**
 1. New messages
@@ -108,7 +110,7 @@ Once an account is linked, the Laravel backend saves the linked account informat
 
 These events trigger synchronization jobs, which update both the backend and frontend.
 ### Features
-- **Unique Queue Jobs:** Jobs are made unique to avoid unnecessary processing.
+- **Unique Queue Jobs:** Jobs are made unique to avoid unnecessary processing. If a job for a specific folder or message is already in queue, the new job will not create.
 - **Elasticsearch Indexes:** Managed using the `babenkoivan/elastic-migrations` package, which handles Elasticsearch indexes similarly to MySQL migrations.
 - **OAuth:** Implemented using the `laravel/socialite` package. Microsoft Outlook support is added via the `socialiteproviders/microsoft` package.
 - **IMAP Communication:** Managed by the `webklex/laravel-imap` package. A custom wrapper, `CustomImapIdleService`, is used to extend its IDLE functionality for events like flag changes and deletions.
