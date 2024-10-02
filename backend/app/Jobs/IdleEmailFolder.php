@@ -22,7 +22,7 @@ class IdleEmailFolder implements ShouldQueue, ShouldBeUnique
 
     public $oauthAccount, $folderName, $esEmailMessageModel;
     protected $maxRetries = 100; // Max number of retries
-    protected $retryDelay = 30; // Delay in seconds before retry
+    protected $retryDelay = 1; // Delay in seconds before retry
 
     /**
      * Create a new job instance.
@@ -68,7 +68,7 @@ class IdleEmailFolder implements ShouldQueue, ShouldBeUnique
                         event(new ImapNewMessageEvent($this->oauthAccount, $payload['message'], $this->folderName));
                     }
 
-                }, 3600);
+                }, 60);
 
             } catch (Exception $e) {
                 $attempts++;

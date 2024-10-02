@@ -28,7 +28,17 @@ class ElasticModel
     }
 
     public function delete(String $id) {
-        $this->esClient->delete($id);
+
+        $params = [
+            'index' => $this->index,
+            'id'    => $id,
+        ];
+
+        try {
+            $this->esClient->delete($params);
+        } catch (\Exception $e) {
+            Log::error("Elasticsearch delete failed: " . $e->getMessage());
+        }
     }
 
     public function deleteByParams($params)

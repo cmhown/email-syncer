@@ -15,6 +15,9 @@ class SSEController extends Controller
 
             ob_start();
 
+            echo ": Initializing SSE connection\n\n";
+            flush();
+
             while (true) {
 
                 $data = EmailUpdateService::getEmailUpdatesForAccount($oauth_id, $provider);

@@ -71,11 +71,21 @@ If you change the port of react app from 3000, please also change it in `backend
 
 **React**
 
-If react container fails to restart, run `npm install` from host machine in `frontend` directory.
+If react container fails to start, run `npm install` from host machine in `frontend` directory.
+```
+cd frontend
+```
+```
+npm install
+```
+If still not work, run this commond twice
+```
+npm audit fix --force
+```
 
 ### Usage
 1. Open the React app URL and register a new user.
-2. Log in to your account. You will be redirected to the dashboard page http://localhost:3000.
+2. Log in to your account. You will be redirected to the home page. If it doesn't redirects, try access this url manually http://localhost:3000.
 3. Link an email provider from the available options (Google or Microsoft).
 4. Your email list will start loading on UI as soon as emails are fetched in the backend.
 5. The frontend uses the EventSource API to get real-time updates from the server.

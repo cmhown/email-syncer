@@ -75,7 +75,7 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
             $this->fail($e);
         }
         
-        EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provider, 'sync_folders');
+        EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provider, 'sync-folders');
 
         Log::info("Synced folders for account: " . $this->oauthAccount->id);
     }

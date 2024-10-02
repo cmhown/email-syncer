@@ -11,7 +11,7 @@ class EmailUpdateService
     {
         $folderId = formatFolderId($accountId, $folderName);
         Redis::lpush("email_updates_{$accountId}-{$provider}", $folderId);
-        Redis::expire("email_updates_{$accountId}", 60 * 10); // Keep updates for 10 minutes
+        Redis::expire("email_updates_{$accountId}", 10); // Keep updates for 10 seconds
         return "email_updates_{$accountId}-{$provider}";
     }
 
@@ -21,7 +21,7 @@ class EmailUpdateService
         $folder_id = Redis::lrange("email_updates_{$accountId}-{$provider}", 0, -1);
 
         // Clear updates once retrieved
-        Redis::del("email_updates_{$accountId}-{$provider}");
+        // Redis::del("email_updates_{$accountId}-{$provider}");
 
         return $folder_id;
     }
