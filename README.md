@@ -17,7 +17,7 @@ cp .env.example .env
 ```
 Start docker conatiners
 ```
-docker compose up -d
+docker-compose up -d
 ```
 
 ### Configuration
