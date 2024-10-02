@@ -45,7 +45,7 @@ class EmailFolder extends ElasticModel
             'user_id' => $oauthAccount->user_id,
             'oauth_id' => $oauthAccount->id,
             'provider' => $oauthAccount->provider,
-            'id' => formatFolderId($oauthAccount->id, $folder['name']),
+            'id' => formatFolderId($oauthAccount->id, $folder['full_name']),
             ...$folder
         ];
 

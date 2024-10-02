@@ -27,12 +27,16 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
         '[Gmail]'
     ];
 
+    private $initialDelay = 120; // Default starting delay
+    private $delayIncrement = 60; // Delay increment in seconds
+
     /**
      * Create a new job instance.
      */
-    public function __construct(OauthAccount $oauthAccount)
+    public function __construct(OauthAccount $oauthAccount, $initialDelay = 0)
     {
         $this->oauthAccount = $oauthAccount;
+        $this->initialDelay = $initialDelay; // Allow custom initial delay
     }
 
     /**
@@ -62,7 +66,7 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
             $this->esEmailFolderModel->deleteAcountFolders($this->oauthAccount->id);
 
             // Recursively handle folders and subfolders
-            $this->syncFoldersRecursively($folders);
+            $this->syncFoldersRecursively($folders, null, $this->initialDelay);
 
         } catch (Exception $e) {
             Log::error("Exception in account: " . $this->oauthAccount->id);
@@ -71,7 +75,7 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
             $this->fail($e);
         }
         
-        EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provier, 'sync_folders');
+        EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provider, 'sync_folders');
 
         Log::info("Synced folders for account: " . $this->oauthAccount->id);
     }
@@ -79,7 +83,7 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
     /**
      * Recursively sync folders and their children.
      */
-    private function syncFoldersRecursively($folders, $parentFolderName = null)
+    private function syncFoldersRecursively($folders, $parentFolderName = null, $currentDelay)
     {
         foreach ($folders as $folder) {
             $folderName = $parentFolderName ? $parentFolderName . '/' . $folder->name : $folder->name;
@@ -88,20 +92,21 @@ class SyncEmailFolders implements ShouldQueue, ShouldBeUnique
 
             $folderData = ImapDataParser::parseFolderData($folder);
 
-            $this->esEmailFolderModel->add($this->oauthAccount, $folderData);
-
             if (!in_array($folderName, $this->skipFolders)) {
                 
-                SyncFolderMessages::dispatch($this->oauthAccount, $folderName);
+                $this->esEmailFolderModel->add($this->oauthAccount, $folderData);
 
-                // Setting Idle job in separate queue to scale separately
-                IdleEmailFolder::dispatch($this->oauthAccount, $folderName)->onQueue('imap_idle');
+                // Dispatch the jobs with the current delay
+                SyncFolderMessages::dispatch($this->oauthAccount, $folderName)->delay(now()->addSeconds($currentDelay));
+                IdleEmailFolder::dispatch($this->oauthAccount, $folderName)->onQueue('imap_idle')->delay(now()->addSeconds($currentDelay));
+
+                // Increment the delay for the next job
+                $currentDelay += $this->delayIncrement;
             }
-            Log::info("Synced folders for account: " . $this->oauthAccount->id . " and folder: " . $folderName);
 
             // Recursively process child folders, if any
             if ($folder->hasChildren()) {
-                $this->syncFoldersRecursively($folder->getChildren(), $folderName);
+                $this->syncFoldersRecursively($folder->getChildren(), $folderName, $currentDelay);
             }
         }
     }

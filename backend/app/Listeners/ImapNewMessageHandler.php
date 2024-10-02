@@ -25,7 +25,7 @@ class ImapNewMessageHandler implements ShouldQueue
         $esEmailMessage->add($oauthAccount, $message, $folderName);
 
         // To send information to FE
-        EmailUpdateService::sendEmailUpdate($oauthAccount->id, $oauthAccount->provier, $folderName);
+        EmailUpdateService::sendEmailUpdate($oauthAccount->id, $oauthAccount->provider, $folderName);
 
     }
 }

@@ -16,10 +16,6 @@ const OAuthCallback = () => {
       if (code && provider) {
         try {
           const response = await api.post(`/auth/${provider}/callback`, { code });
-          // const { token } = response.data;
-
-          // Save the token (you can use localStorage or state management here)
-          // localStorage.setItem('authToken', token);
 
           // Navigate to the dashboard or another page after successful authentication
           navigate('/');

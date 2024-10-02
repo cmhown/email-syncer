@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use App\Services\Contracts\TokenServiceContract;
+use App\Services\GoogleTokenService;
 use App\Services\MicrosoftTokenService;
 use Illuminate\Support\ServiceProvider;
-use InvalidArgumentException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -18,6 +18,8 @@ class AppServiceProvider extends ServiceProvider
             switch ($parameters['provider']) {
                 case 'microsoft':
                     return new MicrosoftTokenService();
+                case 'google':
+                    return new GoogleTokenService();
                 default:
                     return new MicrosoftTokenService();
             }

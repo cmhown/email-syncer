@@ -17,7 +17,7 @@ const Login = () => {
       const { token } = response.data;
 
       // Save the token (you can use localStorage or state management)
-      localStorage.setItem('authToken', token);
+      await localStorage.setItem('authToken', token);
 
       // Redirect to the dashboard after successful login
       navigate('/');

@@ -38,7 +38,7 @@ class IdleEmailFolder implements ShouldQueue, ShouldBeUnique
      */
     public function uniqueId(): string
     {
-        return $this->oauthAccount->id . '-' . $this->folderName;
+        return formatFolderId($this->oauthAccount->id, $this->folderName);
     }
 
     /**

@@ -83,7 +83,7 @@ class EmailMessage extends ElasticModel
             'scroll' => '2m', // Keep the scroll context alive for 2 minutes
             'size' => 100, // Number of documents to retrieve per batch
             'body' => [
-                '_source' => ['message_id'], // Only retrieve the message_id field
+                '_source' => ['id'], // Only retrieve the id field
                 'query' => [
                     'term' => [
                         'folder_id' => $folderId
@@ -99,7 +99,7 @@ class EmailMessage extends ElasticModel
             while (true) {
                 // Add the current batch of message IDs to the array
                 foreach ($response['hits']['hits'] as $hit) {
-                    $messageIds[] = $hit['_source']['message_id']; // Get only message_id
+                    $messageIds[] = $hit['_source']['id']; // Get only id
                 }
 
                 // Check if there are more results
@@ -141,7 +141,7 @@ class EmailMessage extends ElasticModel
                         'must' => [
                             [
                                 'terms' => [
-                                    'message_id' => $messageIds // Assuming message_id is the field in your Elasticsearch index
+                                    'id' => $messageIds
                                 ]
                             ],
                             [

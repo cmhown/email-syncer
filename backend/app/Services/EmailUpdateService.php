@@ -9,7 +9,8 @@ class EmailUpdateService
     // Store email updates in Redis (or any other caching system)
     public static function sendEmailUpdate($accountId, $provider, $folderName)
     {
-        Redis::lpush("email_updates_{$accountId}-{$provider}", "{$accountId}-{$folderName}");
+        $folderId = formatFolderId($accountId, $folderName);
+        Redis::lpush("email_updates_{$accountId}-{$provider}", $folderId);
         Redis::expire("email_updates_{$accountId}", 60 * 10); // Keep updates for 10 minutes
         return "email_updates_{$accountId}-{$provider}";
     }

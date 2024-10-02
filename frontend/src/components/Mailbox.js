@@ -63,7 +63,7 @@ const Mailbox = (props) => {
             const data = JSON.parse(event.data);
             const folder_ids = data || [];
 
-            if (Array.isArray(folder_ids) && folder_ids.includes('sync_folders')) {
+            if (Array.isArray(folder_ids) && folder_ids.includes(`${oauth_id}-sync_folders`)) {
                 fetchFolders();
             } 
             

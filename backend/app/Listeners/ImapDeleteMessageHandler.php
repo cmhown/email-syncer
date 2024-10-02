@@ -25,7 +25,7 @@ class ImapDeleteMessageHandler implements ShouldQueue
         $esEmailMessage->delete(formatMessageId($oauthId, $folderName, $messageUid));
 
         // To send information to FE
-        EmailUpdateService::sendEmailUpdate($oauthId, $event->oauthAccount->provier, $folderName);
+        EmailUpdateService::sendEmailUpdate($oauthId, $event->oauthAccount->provider, $folderName);
 
     }
 }

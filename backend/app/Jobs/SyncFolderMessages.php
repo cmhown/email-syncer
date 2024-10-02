@@ -36,7 +36,7 @@ class SyncFolderMessages implements ShouldQueue, ShouldBeUnique
      */
     public function uniqueId(): string
     {
-        return $this->oauthAccount->id . '-' . $this->folderName;
+        return formatFolderId($this->oauthAccount->id, $this->folderName);
     }
 
     /**
@@ -64,7 +64,7 @@ class SyncFolderMessages implements ShouldQueue, ShouldBeUnique
             $folder->messages()->all()->chunked(function ($messages, $chunk) use (&$newMessageIds) {
                 $messages->each(function ($message) use (&$newMessageIds) {
                     $messageData = ImapDataParser::parseMessageData($message);
-                    $newMessageIds[] = $messageData['message_id']; // Collect new message IDs
+                    $newMessageIds[] = formatMessageId($this->oauthAccount->id, $this->folderName, $messageData['uid']);
                     $this->esEmailMessageModel->add($this->oauthAccount, $messageData, $this->folderName);
                 });
             }, $chunk_size = 100, $start_chunk = 1);
@@ -72,7 +72,7 @@ class SyncFolderMessages implements ShouldQueue, ShouldBeUnique
             $messagesToDelete = array_diff($existingMessageIds, $newMessageIds);
 
             if (!empty($messagesToDelete)) {
-                $this->esEmailMessageModel->deleteMessages($messagesToDelete, formatFolderId($this->oauthAccount->id, $this->folderName));
+                $this->esEmailMessageModel->deleteMessages(array_values($messagesToDelete), formatFolderId($this->oauthAccount->id, $this->folderName));
             }
         } catch (Exception $e) {
             Log::error("Exception in account: " . $this->oauthAccount->id . " and Folder: " . $this->folderName);
@@ -81,7 +81,7 @@ class SyncFolderMessages implements ShouldQueue, ShouldBeUnique
             $this->fail($e);
         }
 
-        EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provier, $this->folderName);
+        EmailUpdateService::sendEmailUpdate($this->oauthAccount->id, $this->oauthAccount->provider, $this->folderName);
 
         Log::info("Synced message for account: " . $this->oauthAccount->id . " and Folder: " . $this->folderName);
     }
